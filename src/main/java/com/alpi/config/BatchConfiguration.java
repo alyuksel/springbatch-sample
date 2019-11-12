@@ -18,6 +18,7 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -68,7 +69,18 @@ public class BatchConfiguration {
     }
 
     @Bean
-    public Job importUserJob(JobCompletionNotificationListener listener, Step step1) {
+    @Qualifier(value = "jdbcJob")
+    public Job importUserJobJdbc(JobCompletionNotificationListener listener, @Autowired @Qualifier("jdbcStep") Step step2) {
+        return jobBuilderFactory.get("importUserJob")
+                .incrementer(new RunIdIncrementer())
+                .listener(listener)
+                .flow(step2)
+                .end()
+                .build();
+    }
+
+    @Bean(value = "consoleJob")
+    public Job displayUserJob(JobCompletionNotificationListener listener, @Autowired @Qualifier("consoleStep") Step step1) {
         return jobBuilderFactory.get("importUserJob")
                 .incrementer(new RunIdIncrementer())
                 .listener(listener)
@@ -77,8 +89,18 @@ public class BatchConfiguration {
                 .build();
     }
 
-    @Bean
-    public Step step1(JdbcBatchItemWriter<Person> writer) {
+    @Bean(value = "jdbcStep")
+    public Step step2(JdbcBatchItemWriter<Person> writer) {
+        return stepBuilderFactory.get("step2")
+                .<Person, Person> chunk(10)
+                .reader(reader())
+                .processor(processor())
+                .writer(writer)
+                .build();
+    }
+
+    @Bean(value = "consoleStep")
+    public Step step1(ConsoleItemWriter<Person> writer) {
         return stepBuilderFactory.get("step1")
                 .<Person, Person> chunk(10)
                 .reader(reader())
