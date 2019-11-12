@@ -1,4 +1,4 @@
-package com.alpi;
+package com.alpi.writer;
 
 import org.springframework.batch.item.ItemWriter;
 

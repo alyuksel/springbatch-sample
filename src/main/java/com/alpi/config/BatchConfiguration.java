@@ -1,7 +1,7 @@
 package com.alpi.config;
 
 
-import com.alpi.ConsoleItemWriter;
+import com.alpi.writer.ConsoleItemWriter;
 import com.alpi.JobCompletionNotificationListener;
 import com.alpi.PersonItemProcessor;
 import com.alpi.models.Person;
